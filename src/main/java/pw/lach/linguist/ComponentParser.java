@@ -42,7 +42,7 @@ public abstract class ComponentParser<L, O> {
 
     private String takePropertyName() {
         int start = offset;
-        while (peek() != '\'' && peek() != '{' && peek() != ' ' && peek() != '.') {
+        while (peek() != '\'' && peek() != '{' && peek() != '}' && peek() != ' ' && peek() != '.') {
             skip();
         }
         return new String(string, start, offset - start);
@@ -121,6 +121,7 @@ public abstract class ComponentParser<L, O> {
                     var slot = takeSlot();
                     component.setPropertySlot(prop, slot);
                     break;
+                case '}':
                 case '.':
                 case ' ':
                     component.enableProperty(prop);
