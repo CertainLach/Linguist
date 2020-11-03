@@ -7,6 +7,9 @@ public interface IComponent<L, O> {
         throw new IllegalStateException(what + " not supported");
     }
 
+    default void setSlot(int slot) {
+        notSupported("Value slot");
+    }
 
     default void setProperty(String name, String value) {
         notSupported(name + " property");

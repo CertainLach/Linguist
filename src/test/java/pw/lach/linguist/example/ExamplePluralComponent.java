@@ -11,6 +11,11 @@ public class ExamplePluralComponent implements IComponent<ExampleLocale, String>
     String form2;
 
     @Override
+    public void setSlot(int slot) {
+        valueSlot = slot;
+    }
+
+    @Override
     public void setProperty(String name, String value) {
         switch (name) {
             case "1":
@@ -20,29 +25,18 @@ public class ExamplePluralComponent implements IComponent<ExampleLocale, String>
                 form2 = value;
                 break;
             default:
-                throw new IllegalStateException("Property not supported: " + name);
+                IComponent.notSupported(name + " property");
         }
     }
 
     @Override
-    public void setPropertySlot(String name, int slot) {
-        switch (name) {
-            case "value":
-                valueSlot = slot;
-                break;
-            default:
-                throw new IllegalStateException("Slot not supported: " + name);
-        }
-    }
-
-    @Override
-    public void enableProperty(String name) {
+    public void enableFeature(String name) {
         switch (name) {
             case "hideCount":
                 showCount = false;
                 break;
             default:
-                throw new IllegalStateException("Property not supported: " + name);
+                IComponent.notSupported(name + " feature");
         }
     }
 

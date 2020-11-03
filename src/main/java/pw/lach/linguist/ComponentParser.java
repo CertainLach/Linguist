@@ -34,7 +34,7 @@ public abstract class ComponentParser<L, O> {
 
     private String takeComponentName() {
         int start = offset;
-        while (peek() != '}' && peek() != '.' && peek() != ' ') {
+        while (peek() != '{' && peek() != '}' && peek() != '.' && peek() != ' ') {
             skip();
         }
         return new String(string, start, offset - start);
@@ -108,6 +108,13 @@ public abstract class ComponentParser<L, O> {
         }
         var name = takeComponentName();
         var component = componentByName(name);
+
+        switch (peek()) {
+            case '{':
+                var value = takeSlot();
+                component.setSlot(value);
+                break;
+        }
 
         while (peek() == '.') {
             skip();
