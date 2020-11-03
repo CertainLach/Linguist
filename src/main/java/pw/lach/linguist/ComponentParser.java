@@ -109,48 +109,56 @@ public abstract class ComponentParser<L, O> {
         var name = takeComponentName();
         var component = componentByName(name);
 
-        switch (peek()) {
-            case '{':
-                var value = takeSlot();
-                component.setSlot(value);
-                break;
-        }
-
-        while (peek() == '.') {
-            skip();
-            var prop = takePropertyName();
+        try {
             switch (peek()) {
-                case '\'':
-                    var value = takeStringProperty();
-                    component.setProperty(prop, value);
-                    break;
                 case '{':
-                    var slot = takeSlot();
-                    component.setNamedSlot(prop, slot);
+                    var value = takeSlot();
+                    component.setSlot(value);
                     break;
-                case '}':
-                case '.':
-                case ' ':
-                    component.enableFeature(prop);
-                    break;
-                default:
             }
-        }
-        var ch = take();
-        if (ch == '}') {
+
+            while (peek() == '.') {
+                skip();
+                var prop = takePropertyName();
+                switch (peek()) {
+                    case '\'':
+                        var value = takeStringProperty();
+                        component.setProperty(prop, value);
+                        break;
+                    case '{':
+                        var slot = takeSlot();
+                        component.setNamedSlot(prop, slot);
+                        break;
+                    case '}':
+                    case '.':
+                    case ' ':
+                        component.enableFeature(prop);
+                        break;
+                    default:
+                }
+            }
+            var ch = take();
+            if (ch == '}') {
+                component.validate();
+                return component;
+            }
+            if (ch != ' ') {
+                throw new IllegalStateException("Component description should end with either \" \" or \"}\"");
+            }
+            skip();
+            component.setChildren(takeComponents());
+            if (take() != '}') {
+                throw new IllegalStateException("Component description with children should end with \"}\"");
+            }
             component.validate();
             return component;
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("While parsing " + name + " at " + location(), e);
         }
-        if (ch != ' ') {
-            throw new IllegalStateException("Component description should end with either \" \" or \"}\"");
-        }
-        skip();
-        component.setChildren(takeComponents());
-        if (take() != '}') {
-            throw new IllegalStateException("Component description with children should end with \"}\"");
-        }
-        component.validate();
-        return component;
+    }
+
+    private String location() {
+        return "\"" + new String(string) + "\":" + offset;
     }
 
     private int takeInt() {
