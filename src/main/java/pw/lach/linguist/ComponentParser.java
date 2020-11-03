@@ -119,12 +119,12 @@ public abstract class ComponentParser<L, O> {
                     break;
                 case '{':
                     var slot = takeSlot();
-                    component.setPropertySlot(prop, slot);
+                    component.setNamedSlot(prop, slot);
                     break;
                 case '}':
                 case '.':
                 case ' ':
-                    component.enableProperty(prop);
+                    component.enableFeature(prop);
                     break;
                 default:
             }

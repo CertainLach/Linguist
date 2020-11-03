@@ -55,11 +55,6 @@ public class ExamplePluralComponent implements IComponent<ExampleLocale, String>
     }
 
     @Override
-    public void setChildren(List<IComponent<ExampleLocale, String>> components) {
-        throw new IllegalStateException("No children supported");
-    }
-
-    @Override
     public String localize(ExampleLocale locale, Object[] input) {
         int value = (int) input[valueSlot];
         String out = "";
