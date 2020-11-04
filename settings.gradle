@@ -1,1 +1,3 @@
 rootProject.name = 'linguist'
+
+include 'linguist-poparser'
