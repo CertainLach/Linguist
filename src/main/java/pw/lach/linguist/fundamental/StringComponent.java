@@ -1,10 +1,8 @@
 package pw.lach.linguist.fundamental;
 
-import java.util.List;
+import pw.lach.linguist.Component;
 
-import pw.lach.linguist.IComponent;
-
-public abstract class StringComponent<L, O> implements IComponent<L, O> {
+public abstract class StringComponent<L, O> implements Component<L, O> {
     protected final String string;
 
     protected StringComponent(String string) {

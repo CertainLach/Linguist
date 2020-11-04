@@ -1,11 +1,11 @@
 package pw.lach.linguist;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import pw.lach.linguist.fundamental.ListComponent;
 import pw.lach.linguist.fundamental.SlotComponent;
 import pw.lach.linguist.fundamental.StringComponent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ComponentParser<L, O> {
     private final char[] string;
@@ -20,32 +20,28 @@ public abstract class ComponentParser<L, O> {
         this(input.toCharArray());
     }
 
-    protected abstract IComponent<L, O> componentByName(String name);
+    protected abstract Component<L, O> componentByName(String name);
 
     protected abstract StringComponent<L, O> fundamentalString(String str);
 
     protected abstract SlotComponent<L, O> fundamentalSlot(int slot);
 
-    protected abstract ListComponent<L, O> fundamentalList(List<IComponent<L, O>> components);
+    protected abstract ListComponent<L, O> fundamentalList(List<Component<L, O>> components);
 
-    protected IComponent<L, O> parse() {
+    protected Component<L, O> parse() {
         return fundamentalList(takeComponents());
     }
 
     private String takeComponentName() {
         int start = offset;
-        while (peek() != '{' && peek() != '}' && peek() != '.' && peek() != ' ') {
+        while (peek() != '\'' && peek() != '{' && peek() != '}' && peek() != ' ' && peek() != '.') {
             skip();
         }
         return new String(string, start, offset - start);
     }
 
     private String takePropertyName() {
-        int start = offset;
-        while (peek() != '\'' && peek() != '{' && peek() != '}' && peek() != ' ' && peek() != '.') {
-            skip();
-        }
-        return new String(string, start, offset - start);
+        return takeComponentName();
     }
 
     private String takeStringProperty() {
@@ -61,21 +57,6 @@ public abstract class ComponentParser<L, O> {
         return out;
     }
 
-    private int takeSlot() {
-        if (take() != '{') {
-            throw new IllegalStateException("Slots should start with \"{\"");
-        }
-        if (peek() == '}') {
-            skip();
-            return slot++;
-        }
-        int result = takeInt();
-        if (take() != '}') {
-            throw new IllegalStateException("Slots should end with \"}\"");
-        }
-        return result;
-    }
-
     private StringComponent<L, O> takeComponentString() {
         int start = offset;
         while (!isEnd() && peek() != '{' && peek() != '}') {
@@ -84,8 +65,8 @@ public abstract class ComponentParser<L, O> {
         return fundamentalString(new String(string, start, offset - start));
     }
 
-    private List<IComponent<L, O>> takeComponents() {
-        var out = new ArrayList<IComponent<L, O>>();
+    private List<Component<L, O>> takeComponents() {
+        var out = new ArrayList<Component<L, O>>();
         while (!isEnd() && peek() != '}') {
             switch (peek()) {
                 case '{':
@@ -99,12 +80,17 @@ public abstract class ComponentParser<L, O> {
         return out;
     }
 
-    private IComponent<L, O> takeComponent() {
-        if (Character.isDigit(peek(1))) {
-            return fundamentalSlot(takeSlot());
-        }
+    private Component<L, O> takeComponent() {
         if (take() != '{') {
             throw new IllegalStateException("Components should start with \"{\"!");
+        }
+        if (Character.isDigit(peek())) {
+            int value = takeInt();
+            return fundamentalSlot(value);
+        } else if (peek() == '#') {
+            skip();
+            var components = takeComponents();
+            return fundamentalList(components);
         }
         var name = takeComponentName();
         var component = componentByName(name);
@@ -112,8 +98,15 @@ public abstract class ComponentParser<L, O> {
         try {
             switch (peek()) {
                 case '{':
-                    var value = takeSlot();
-                    component.setSlot(value);
+                    var value = takeComponent();
+                    if (value instanceof SlotComponent) {
+                        component.setSlot(((SlotComponent<L, O>) value).slot);
+                    } else {
+                        component.setComponent(value);
+                    }
+                    break;
+                case '\'':
+                    component.setProperty(takeStringProperty());
                     break;
             }
 
@@ -121,19 +114,26 @@ public abstract class ComponentParser<L, O> {
                 skip();
                 var prop = takePropertyName();
                 switch (peek()) {
-                    case '\'':
+                    case '\'': {
                         var value = takeStringProperty();
-                        component.setProperty(prop, value);
+                        component.setNamedProperty(prop, value);
                         break;
-                    case '{':
-                        var slot = takeSlot();
-                        component.setNamedSlot(prop, slot);
+                    }
+                    case '{': {
+                        var value = takeComponent();
+                        if (value instanceof SlotComponent) {
+                            component.setNamedSlot(prop, ((SlotComponent<L, O>) value).slot);
+                        } else {
+                            component.setComponent(value);
+                        }
                         break;
+                    }
                     case '}':
                     case '.':
-                    case ' ':
+                    case ' ': {
                         component.enableFeature(prop);
                         break;
+                    }
                     default:
                 }
             }

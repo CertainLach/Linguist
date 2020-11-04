@@ -1,10 +1,9 @@
 package pw.lach.linguist.example;
 
-import pw.lach.linguist.IComponent;
+import pw.lach.linguist.Component;
 import pw.lach.linguist.example.ExampleLocale;
-import java.util.List;
 
-public class ExamplePluralComponent implements IComponent<ExampleLocale, String> {
+public class ExamplePluralComponent implements Component<ExampleLocale, String> {
     boolean showCount = true;
     int valueSlot = -1;
     String form1;
@@ -16,7 +15,7 @@ public class ExamplePluralComponent implements IComponent<ExampleLocale, String>
     }
 
     @Override
-    public void setProperty(String name, String value) {
+    public void setNamedProperty(String name, String value) {
         switch (name) {
             case "1":
                 form1 = value;
@@ -25,7 +24,7 @@ public class ExamplePluralComponent implements IComponent<ExampleLocale, String>
                 form2 = value;
                 break;
             default:
-                IComponent.notSupported(name + " property");
+                Component.notSupported(name + " property");
         }
     }
 
@@ -36,7 +35,7 @@ public class ExamplePluralComponent implements IComponent<ExampleLocale, String>
                 showCount = false;
                 break;
             default:
-                IComponent.notSupported(name + " feature");
+                Component.notSupported(name + " feature");
         }
     }
 
