@@ -65,7 +65,7 @@ public class PluralComponent implements Component<SpigotLocale, BaseComponent[]>
     @Override
     public BaseComponent[] localize(SpigotLocale locale, Object[] input) {
         int value = (int) input[valueSlot];
-        int form = locale.getData().choosePluralForm(value);
+        int form = locale.getData().choosePluralForm(value) - 1;
         if (forms[form] instanceof Component) {
             //noinspection unchecked
             return ((Component<SpigotLocale, BaseComponent[]>) forms[form]).localize(locale, input);
