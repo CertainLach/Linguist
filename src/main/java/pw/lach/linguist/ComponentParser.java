@@ -85,8 +85,16 @@ public abstract class ComponentParser<L, O> {
             throw new IllegalStateException("Components should start with \"{\"!");
         }
         if (Character.isDigit(peek())) {
-            int value = takeInt();
+            int value = takeInt() - 1;
+            if (value < 0) {
+                throw new IllegalStateException("Slot ids should start with 1, not 0!");
+            } else if (take() != '}') {
+                throw new IllegalStateException("Slots should end with \"}\"!");
+            }
             return fundamentalSlot(value);
+        } else if (peek() == '}') {
+            skip();
+            return fundamentalSlot(slot++);
         } else if (peek() == '#') {
             skip();
             var components = takeComponents();
@@ -145,7 +153,6 @@ public abstract class ComponentParser<L, O> {
             if (ch != ' ') {
                 throw new IllegalStateException("Component description should end with either \" \" or \"}\"");
             }
-            skip();
             component.setChildren(takeComponents());
             if (take() != '}') {
                 throw new IllegalStateException("Component description with children should end with \"}\"");
