@@ -26,6 +26,13 @@ public class SpigotComponentParser extends ComponentParser<SpigotLocale, BaseCom
         FACTORIES.put(name, factory);
     }
 
+    static {
+        registerFactory("fmt", FormattingComponent::new);
+        registerFactory("plural", PluralComponent::new);
+        registerFactory("date", DateComponent::new);
+        registerFactory("num", NumberComponent::new);
+    }
+
     public SpigotComponentParser(String input) {
         super(input);
     }
@@ -44,10 +51,6 @@ public class SpigotComponentParser extends ComponentParser<SpigotLocale, BaseCom
                 out.enableColor(fmt);
             }
             return out;
-        } else if (name.equals("fmt")) {
-            return new FormattingComponent();
-        } else if (name.equals("plural")) {
-            return new PluralComponent();
         }
         return FACTORIES.get(name).get();
     }
